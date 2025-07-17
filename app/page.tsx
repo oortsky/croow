@@ -1,10 +1,11 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ModeToggle } from "@/components/mode-toggle";
-import { useState } from "react";
 
-export default function Home() {
+export default function Page() {
   const [count, setCount] = useState(0);
 
   return (
@@ -13,6 +14,12 @@ export default function Home() {
         TROOW
       </h1>
       <Button onClick={() => setCount(count + 1)}>{count} Click!</Button>
+      <Button variant="link" asChild>
+        <Link href="/privacy">Privacy Policy</Link>
+      </Button>
+      <Button variant="link" asChild>
+        <Link href="/terms">Terms and Conditions</Link>
+      </Button>
       <ModeToggle />
     </div>
   );
