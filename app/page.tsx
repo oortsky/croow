@@ -20,6 +20,9 @@ export default function Page() {
       <Button variant="link" asChild>
         <Link href="/terms">Terms and Conditions</Link>
       </Button>
+      <Button asChild>
+        <Link href="/transaction/new">Try Now</Link>
+      </Button>
       <ModeToggle />
     </div>
   );

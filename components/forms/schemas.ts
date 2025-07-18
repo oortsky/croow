@@ -1,0 +1,65 @@
+import { z } from "zod";
+
+const phoneNumberRegex = /^62\d{9,15}$/;
+
+export const stepOneSchema = z.object({
+  payer: z.object({
+    name: z.string().min(2, { message: "Name is required" }),
+    email: z.string().email({ message: "Invalid email address" }),
+    phone: z.string().regex(phoneNumberRegex, {
+      message: "Phone number must start with '62' and be at least 11 digits"
+    }),
+    bank: z.string().min(2, { message: "Bank is required" }),
+    account_number: z
+      .string()
+      .min(5, { message: "Account number is required" }),
+    account_holder_name: z
+      .string()
+      .min(2, { message: "Account holder name is required" }),
+    same_as_name: z.boolean().optional()
+  })
+});
+
+export const stepTwoSchema = z.object({
+  payee: z.object({
+    name: z.string().min(2, { message: "Name is required" }),
+    email: z.string().email({ message: "Invalid email address" }),
+    phone: z.string().regex(phoneNumberRegex, {
+      message: "Phone number must start with '62' and be at least 11 digits"
+    }),
+    bank: z.string().min(2, { message: "Bank is required" }),
+    account_number: z
+      .string()
+      .min(5, { message: "Account number is required" }),
+    account_holder_name: z
+      .string()
+      .min(2, { message: "Account holder name is required" }),
+      same_as_name: z.boolean().optional()
+  })
+});
+
+export const stepThreeSchema = z.object({
+  transaction: z.object({
+    title: z.string().min(2, { message: "Title is required" }),
+    category: z.string().min(2, { message: "Category is required" }),
+    amount: z.string().min(2, { message: "Amount is required" }),
+    note: z.string().optional()
+  })
+});
+
+export const stepFourSchema = z.object({
+  payment_method: z.string().min(2, { message: "Payment method is required" }),
+  additional: z.object({
+    isAcceptTerms: z.literal(true, {
+      errorMap: () => ({ message: "You must accept the terms" })
+    }),
+    isAcceptPrivacy: z.literal(true, {
+      errorMap: () => ({ message: "You must accept the privacy policy" })
+    })
+  })
+});
+
+export const fullFormSchema = stepOneSchema
+  .merge(stepTwoSchema)
+  .merge(stepThreeSchema)
+  .merge(stepFourSchema);
