@@ -8,3 +8,5 @@ export const banks = [
   { value: "Jago", label: "Jago" },
   { value: "SeaBank", label: "SeaBank" }
 ];
+
+export const banksValues = banks.map(b => b.value);

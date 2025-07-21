@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
 import { categories } from "@/constants/categories";
+import { formatRupiahNoPrefix, parseRupiah } from "@/utils/rupiah";
 
 type Props = { form: UseFormReturn<any> };
 
@@ -25,12 +26,13 @@ export function StepThree({ form }: Props) {
           <FormItem>
             <FormLabel>Title</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. Pembayaran jasa desain" {...field} />
+              <Input {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="transaction.category"
@@ -40,36 +42,52 @@ export function StepThree({ form }: Props) {
             <FormControl>
               <Combobox
                 options={categories}
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
-                placeholder="Categories"
+                placeholder="Category"
               />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="transaction.amount"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Amount (Min. 10,000)</FormLabel>
+            <FormLabel>Amount (Min. Rp10.000)</FormLabel>
             <FormControl>
-              <Input type="number" placeholder="e.g. 150000" {...field} />
+              <div className="flex gap-2">
+                <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm select-none">
+                  Rp
+                </div>
+                <Input
+                  inputMode="numeric"
+                  className="flex-1"
+                  placeholder="10.000"
+                  value={formatRupiahNoPrefix(field.value ?? 0)}
+                  onChange={(e) => {
+                    const raw = parseRupiah(e.target.value);
+                    field.onChange(raw);
+                  }}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="transaction.note"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Note</FormLabel>
+            <FormLabel>Note (Optional)</FormLabel>
             <FormControl>
-              <Textarea placeholder="Catatan tambahan (opsional)" {...field} />
+              <Textarea {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>

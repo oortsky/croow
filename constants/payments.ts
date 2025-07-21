@@ -1,12 +1,16 @@
 export const payments = [
   {
-    value: "qris",
+    value: "QRIS",
     label: "QRIS",
-    description: "Bayar cepat via e-wallet atau m-banking."
+    description: "Pay quickly via e-wallet or m-banking. Transaction Cost 0.7%",
+    cost: 0.7
   },
   {
-    value: "va",
+    value: "VA",
     label: "Virtual Account",
-    description: "Transfer ke rekening virtual bank."
+    description: "Transfer to virtual bank account. Transaction Cost Rp4.000",
+    cost: 4000
   }
 ];
+
+export const paymentValues = payments.map(p => p.value);

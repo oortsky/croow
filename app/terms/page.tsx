@@ -21,7 +21,7 @@ export default function Page() {
           <Link href="/">Back to Home</Link>
         </Button>
         <Button variant="link" asChild>
-          <Link href="#">Download</Link>
+          <Link href="#" target="_blank">Download</Link>
         </Button>
       </div>
     </main>

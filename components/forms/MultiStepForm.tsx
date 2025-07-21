@@ -7,6 +7,8 @@ import { z } from "zod";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
 
 import { StepOne } from "./StepOne";
 import { StepTwo } from "./StepTwo";
@@ -21,12 +23,18 @@ import {
   fullFormSchema
 } from "./schemas";
 
+const stepTitles = [
+  "Payer Information",
+  "Payee Information",
+  "Transaction Details",
+  "Payment & Confirmation"
+];
+
 export function MultiStepForm() {
-  const [step, setStep] = useState(4);
+  const [step, setStep] = useState(1);
 
   const form = useForm<z.infer<typeof fullFormSchema>>({
     resolver: zodResolver(fullFormSchema),
-    mode: "onBlur",
     defaultValues: {
       payer: {
         name: "",
@@ -34,7 +42,8 @@ export function MultiStepForm() {
         phone: "",
         bank: "",
         account_number: "",
-        account_holder_name: ""
+        account_holder_name: "",
+        same_as_name: false
       },
       payee: {
         name: "",
@@ -42,12 +51,13 @@ export function MultiStepForm() {
         phone: "",
         bank: "",
         account_number: "",
-        account_holder_name: ""
+        account_holder_name: "",
+        same_as_name: false
       },
       transaction: {
         title: "",
         category: "",
-        amount: "",
+        amount: 0,
         note: ""
       },
       payment_method: "",
@@ -59,8 +69,14 @@ export function MultiStepForm() {
   });
 
   const onSubmit = (data: z.infer<typeof fullFormSchema>) => {
-    console.log("✅ Submitted data:", data);
-    // TODO: Kirim data ke backend atau Supabase di sini
+    console.log("Data submitted:", data);
+    toast("You submitted the following values", {
+      description: (
+        <pre className="mt-2 w-full rounded-md bg-neutral-950 p-4">
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+        </pre>
+      )
+    });
   };
 
   const handleNext = async () => {
@@ -77,7 +93,7 @@ export function MultiStepForm() {
     const parsed = currentStepSchema.safeParse(currentValues);
 
     if (!parsed.success) {
-      const errors = parsed.error?.errors;
+      const errors = parsed.error?.issues;
       if (errors && Array.isArray(errors)) {
         errors.forEach(error => {
           if (error.path && error.path.length > 0) {
@@ -101,7 +117,10 @@ export function MultiStepForm() {
         onSubmit={form.handleSubmit(onSubmit)}
         className="space-y-4 max-w-xl mx-auto p-4 border rounded-xl shadow-sm"
       >
-        <div className="text-xl font-bold mb-4">Step {step} of 4</div>
+        <Progress value={(step / stepTitles.length) * 100} />
+
+        <div className="text-xl font-bold mb-2">{stepTitles[step - 1]}</div>
+        <div className="text-sm mb-4">Step {step} of 4</div>
 
         {step === 1 && <StepOne form={form} />}
         {step === 2 && <StepTwo form={form} />}

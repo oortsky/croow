@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -18,8 +18,8 @@ import { Label } from "@/components/ui/label";
 type Props = { form: UseFormReturn<any> };
 
 export function StepTwo({ form }: Props) {
-  const sameAsName = form.watch("payee.same_as_name");
-  const payeeName = form.watch("payee.name");
+  const sameAsName = form.watch("payee.same_as_name") ?? false;
+  const payeeName = form.watch("payee.name") ?? "";
 
   useEffect(() => {
     if (sameAsName && payeeName) {
@@ -36,12 +36,13 @@ export function StepTwo({ form }: Props) {
           <FormItem>
             <FormLabel>Name</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. Penerima" {...field} />
+              <Input {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="payee.email"
@@ -49,25 +50,42 @@ export function StepTwo({ form }: Props) {
           <FormItem>
             <FormLabel>Email</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. penerima@email.com" {...field} />
+              <Input type="email" {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
-        control={form.control}
         name="payee.phone"
+        control={form.control}
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Phone</FormLabel>
+            <FormLabel>Phone Number</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. 6281234567890" {...field} />
+              <div className="flex gap-2">
+                <div className="px-3 py-2 border rounded-md bg-muted text-muted-foreground text-sm select-none">
+                  +62
+                </div>
+                <Input
+                  type="tel"
+                  inputMode="numeric"
+                  placeholder="81234567890"
+                  className="flex-1"
+                  value={field.value?.replace(/^62/, "") ?? ""}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, "");
+                    field.onChange(`62${onlyDigits}`);
+                  }}
+                />
+              </div>
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="payee.bank"
@@ -77,7 +95,7 @@ export function StepTwo({ form }: Props) {
             <FormControl>
               <Combobox
                 options={banks}
-                value={field.value}
+                value={field.value ?? ""}
                 onChange={field.onChange}
                 placeholder="Bank"
               />
@@ -86,6 +104,7 @@ export function StepTwo({ form }: Props) {
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="payee.account_number"
@@ -93,46 +112,46 @@ export function StepTwo({ form }: Props) {
           <FormItem>
             <FormLabel>Account Number</FormLabel>
             <FormControl>
-              <Input placeholder="e.g. 123456789" {...field} />
+              <Input type="number" {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
-      <FormItem>
-        <div className="flex items-center justify-between mb-2">
-          <FormLabel>Account Holder Name</FormLabel>
-          <div className="flex items-center gap-2">
-            <Label htmlFor="sameAsName" className="text-xs">
-              Same as Name
-            </Label>
-            <Switch
-              id="sameAsName"
-              checked={sameAsName}
-              onCheckedChange={val => form.setValue("payee.same_as_name", val)}
-            />
-          </div>
-        </div>
 
-        <FormField
-          control={form.control}
-          name="payee.account_holder_name"
-          render={({ field }) => (
-            <>
-              <FormControl>
-                <Input
-                  placeholder="e.g. Nama di rekening"
-                  {...field}
-                  value={field.value}
-                  onChange={e => field.onChange(e.target.value.toUpperCase())}
-                  disabled={sameAsName}
+      <FormField
+        control={form.control}
+        name="payee.account_holder_name"
+        render={({ field }) => (
+          <FormItem>
+            <div className="flex items-center justify-between mb-2">
+              <FormLabel>Account Holder Name</FormLabel>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="sameAsName" className="text-xs">
+                  Same as Name
+                </Label>
+                <Switch
+                  id="sameAsName"
+                  checked={sameAsName}
+                  onCheckedChange={(val) =>
+                    form.setValue("payee.same_as_name", val)
+                  }
                 />
-              </FormControl>
-              <FormMessage />
-            </>
-          )}
-        />
-      </FormItem>
+              </div>
+            </div>
+
+            <FormControl>
+              <Input
+                {...field}
+                value={field.value ?? ""}
+                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                disabled={sameAsName}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
     </>
   );
 }
