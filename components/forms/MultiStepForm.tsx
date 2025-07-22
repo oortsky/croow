@@ -35,6 +35,7 @@ export function MultiStepForm() {
 
   const form = useForm<z.infer<typeof fullFormSchema>>({
     resolver: zodResolver(fullFormSchema),
+    mode: "onChange",
     defaultValues: {
       payer: {
         name: "",
@@ -80,41 +81,10 @@ export function MultiStepForm() {
   };
 
   const handleNext = async () => {
-    const currentStepSchema =
-      step === 1
-        ? stepOneSchema
-        : step === 2
-        ? stepTwoSchema
-        : step === 3
-        ? stepThreeSchema
-        : stepFourSchema;
-
-    const currentValues = form.getValues();
-    
-    // First clear all errors for current step
     const currentStepFields = getCurrentStepFields();
-    currentStepFields.forEach(fieldName => {
-      form.clearErrors(fieldName as any);
-    });
-
-    const parsed = currentStepSchema.safeParse(currentValues);
-
-    if (!parsed.success) {
-      const errors = parsed.error?.issues;
-      if (errors && Array.isArray(errors)) {
-        errors.forEach(error => {
-          if (error.path && error.path.length > 0) {
-            const fieldName = error.path.join(".") as any;
-            form.setError(fieldName, { 
-              message: error.message,
-              type: "validation" 
-            });
-          } else {
-            console.warn("⚠️ Unknown error path", error);
-          }
-        });
-      }
-    } else {
+    const isValid = await form.trigger(currentStepFields as any);
+    
+    if (isValid) {
       setStep(prev => prev + 1);
     }
   };
