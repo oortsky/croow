@@ -33,12 +33,11 @@ export function StepFour({ form }: Props) {
   const amount = Number(formData?.transaction?.amount ?? 0);
   const paymentMethod = formData?.payment_method;
 
-  // Generate transaction ID
-  const transactionId = `TRX-${Date.now().toString().slice(-8)}`;
-
-    // Generate payer and payee IDs
-  const payerId = `PYR-${Date.now().toString().slice(-8)}`;
-  const payeeId = `PYE-${Date.now().toString().slice(-8)}`;
+  // Generate unique IDs
+  const baseTimestamp = Date.now().toString();
+  const transactionId = `TRX-${baseTimestamp.slice(-8)}`;
+  const payerId = `PYR-${(Date.now() + Math.floor(Math.random() * 1000)).toString().slice(-8)}`;
+  const payeeId = `PYE-${(Date.now() + Math.floor(Math.random() * 10000)).toString().slice(-8)}`;
 
   // Fee calculation based on your specifications
   const qrisCost = Math.floor(0.007 * amount); // 0.7% of transaction amount
@@ -69,12 +68,12 @@ export function StepFour({ form }: Props) {
 
   const recommendation = getRecommendation();
 
-  // Auto-select recommended payment method when amount changes
+  // Auto-select recommended payment method when amount changes or recommendation changes
   useEffect(() => {
-    if (amount > 0 && !paymentMethod) {
+    if (amount > 0) {
       form.setValue("payment_method", recommendation.recommended);
     }
-  }, [amount, recommendation.recommended, paymentMethod, form]);
+  }, [amount, recommendation.recommended, form]);
 
   // Add badges to payment options
   const paymentOptionsWithBadges = payments.map(payment => ({

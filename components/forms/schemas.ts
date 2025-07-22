@@ -17,7 +17,7 @@ export const stepOneSchema = z.object({
     account_holder_name: z
       .string()
       .min(2, { message: "Account holder name is required" }),
-    same_as_name: z.boolean().optional()
+    same_as_name: z.boolean().default(false)
   })
 });
 
@@ -35,7 +35,7 @@ export const stepTwoSchema = z.object({
     account_holder_name: z
       .string()
       .min(2, { message: "Account holder name is required" }),
-    same_as_name: z.boolean().optional()
+    same_as_name: z.boolean().default(false)
   })
 });
 
