@@ -30,6 +30,7 @@
     "date-fns": "^4.1.0",
     "lucide-react": "^0.525.0",
     "marked": "^16.1.1",
+    "mdx": "^0.3.1",
     "next": "15.4.1",
     "next-themes": "^0.4.6",
     "pdf-lib": "^1.17.1",
