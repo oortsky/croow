@@ -90,6 +90,13 @@ export function MultiStepForm() {
         : stepFourSchema;
 
     const currentValues = form.getValues();
+    
+    // First clear all errors for current step
+    const currentStepFields = getCurrentStepFields();
+    currentStepFields.forEach(fieldName => {
+      form.clearErrors(fieldName as any);
+    });
+
     const parsed = currentStepSchema.safeParse(currentValues);
 
     if (!parsed.success) {
@@ -98,18 +105,16 @@ export function MultiStepForm() {
         errors.forEach(error => {
           if (error.path && error.path.length > 0) {
             const fieldName = error.path.join(".") as any;
-            form.setError(fieldName, { message: error.message });
+            form.setError(fieldName, { 
+              message: error.message,
+              type: "validation" 
+            });
           } else {
             console.warn("⚠️ Unknown error path", error);
           }
         });
       }
     } else {
-      // Clear errors for current step fields specifically
-      const currentStepFields = getCurrentStepFields();
-      currentStepFields.forEach(fieldName => {
-        form.clearErrors(fieldName as any);
-      });
       setStep(prev => prev + 1);
     }
   };

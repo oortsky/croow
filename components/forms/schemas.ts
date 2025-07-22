@@ -10,9 +10,7 @@ export const stepOneSchema = z.object({
     phone: z.string().regex(phoneNumberRegex, {
       message: "Phone number must start with '62' and be at least 11 digits"
     }),
-    bank: z.string({
-      error: "Please select a bank."
-    }),
+    bank: z.string().min(1, "Please select a bank."),
     account_number: z
       .string()
       .min(5, { message: "Account number is required" }),
@@ -30,9 +28,7 @@ export const stepTwoSchema = z.object({
     phone: z.string().regex(phoneNumberRegex, {
       message: "Phone number must start with '62' and be at least 11 digits"
     }),
-    bank: z.string({
-      error: "Please select a bank."
-    }),
+    bank: z.string().min(1, "Please select a bank."),
     account_number: z
       .string()
       .min(5, { message: "Account number is required" }),
