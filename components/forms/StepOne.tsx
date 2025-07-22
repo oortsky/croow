@@ -26,6 +26,9 @@ export function StepOne({ form }: Props) {
       form.setValue("payer.account_holder_name", payerName.toUpperCase());
       // Trigger validation to clear any existing errors
       form.trigger("payer.account_holder_name");
+    } else if (!sameAsName) {
+      // Clear the field when switch is turned off
+      form.setValue("payer.account_holder_name", "");
     }
   }, [sameAsName, payerName, form]);
 

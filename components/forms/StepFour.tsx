@@ -104,15 +104,7 @@ export function StepFour({ form }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Payment Method</FormLabel>
-            {amount > 0 && (
-              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                <p className="text-sm font-medium text-blue-800">💡 Recommendation</p>
-                <p className="text-sm text-blue-700">
-                  We recommend <strong>{recommendation.recommended}</strong> for this transaction.
-                </p>
-                <p className="text-xs text-blue-600 mt-1">{recommendation.reason}</p>
-              </div>
-            )}
+            
             <FormControl>
               <RadioGroupCard
                 {...field}
