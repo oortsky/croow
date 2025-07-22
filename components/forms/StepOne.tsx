@@ -27,13 +27,22 @@ export function StepOne({ form }: Props) {
       // Trigger validation to clear any existing errors
       form.trigger("payer.account_holder_name");
     } else if (!sameAsName) {
-      // Clear the field when switch is turned off
+      // Clear the field when switch is turned off, but only if it was auto-filled
       const currentValue = form.getValues("payer.account_holder_name");
       if (currentValue === payerName.toUpperCase()) {
         form.setValue("payer.account_holder_name", "");
+        form.trigger("payer.account_holder_name");
       }
     }
   }, [sameAsName, payerName, form]);
+
+  // Additional effect to handle initial load - clear if switch is off but field has auto-filled value
+  useEffect(() => {
+    const currentValue = form.getValues("payer.account_holder_name");
+    if (!sameAsName && payerName && currentValue === payerName.toUpperCase()) {
+      form.setValue("payer.account_holder_name", "");
+    }
+  }, []);
 
   return (
     <>
