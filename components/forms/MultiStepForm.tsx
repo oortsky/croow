@@ -105,9 +105,50 @@ export function MultiStepForm() {
         });
       }
     } else {
-      // Clear all errors for the current step before proceeding
-      form.clearErrors();
+      // Clear errors for current step fields specifically
+      const currentStepFields = getCurrentStepFields();
+      currentStepFields.forEach(fieldName => {
+        form.clearErrors(fieldName as any);
+      });
       setStep(prev => prev + 1);
+    }
+  };
+
+  const getCurrentStepFields = () => {
+    switch (step) {
+      case 1:
+        return [
+          "payer.name",
+          "payer.email", 
+          "payer.phone",
+          "payer.bank",
+          "payer.account_number",
+          "payer.account_holder_name"
+        ];
+      case 2:
+        return [
+          "payee.name",
+          "payee.email",
+          "payee.phone", 
+          "payee.bank",
+          "payee.account_number",
+          "payee.account_holder_name"
+        ];
+      case 3:
+        return [
+          "transaction.title",
+          "transaction.category",
+          "transaction.amount",
+          "transaction.note"
+        ];
+      case 4:
+        return [
+          "payment_method",
+          "additional.isAcceptTerms",
+          "additional.isAcceptPrivacy"
+        ];
+      default:
+        return [];
     }
   };
 
