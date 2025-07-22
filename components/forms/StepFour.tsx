@@ -18,30 +18,47 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { payments } from "@/constants/payments";
-import { useEffect, useState } from "react";
+
 
 type Props = { form: UseFormReturn<any> };
 
 export function StepFour({ form }: Props) {
-  const [data, setData] = useState<any>({});
+  // Watch form values for real-time updates
+  const formData = form.watch();
+  const amount = Number(formData?.transaction?.amount ?? 0);
+  const paymentMethod = formData?.payment_method;
 
-  useEffect(() => {
-    setData(form.getValues());
-  }, [form]);
+  // Generate transaction ID
+  const transactionId = `TRX-${Date.now().toString().slice(-8)}`;
 
   // Fee calculation based on your specifications
-  const amount = Number(data?.transaction?.amount ?? 0);
-  const paymentMethod = data?.payment_method;
+  const qrisCost = Math.floor(0.007 * amount); // 0.7% of transaction amount
+  const vaCost = 4000; // Fixed IDR 4,000 for VA
 
-  const transactionCost = paymentMethod === "QRIS" 
-    ? Math.floor(0.007 * amount) // 0.7% of transaction amount
-    : 4000; // Fixed IDR 4,000 for VA
+  const transactionCost = paymentMethod === "QRIS" ? qrisCost : vaCost;
 
   const serviceFee = amount < 400000 
     ? 8000 // IDR 8,000 if less than IDR 400,000
     : Math.floor(0.02 * amount); // 2% if more than IDR 400,000
 
   const total = amount + transactionCost + serviceFee;
+
+  // Recommendation system
+  const getRecommendation = () => {
+    if (qrisCost > 4000) {
+      return {
+        recommended: "VA",
+        reason: `QRIS cost (Rp${qrisCost.toLocaleString("id-ID")}) is higher than VA cost (Rp4,000)`
+      };
+    } else {
+      return {
+        recommended: "QRIS",
+        reason: `QRIS cost (Rp${qrisCost.toLocaleString("id-ID")}) is lower than VA cost (Rp4,000)`
+      };
+    }
+  };
+
+  const recommendation = getRecommendation();
 
   return (
     <>
@@ -52,6 +69,15 @@ export function StepFour({ form }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Payment Method</FormLabel>
+            {amount > 0 && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <p className="text-sm font-medium text-blue-800">💡 Recommendation</p>
+                <p className="text-sm text-blue-700">
+                  We recommend <strong>{recommendation.recommended}</strong> for this transaction.
+                </p>
+                <p className="text-xs text-blue-600 mt-1">{recommendation.reason}</p>
+              </div>
+            )}
             <FormControl>
               <RadioGroupCard
                 {...field}
@@ -77,31 +103,31 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span>{data?.payer?.id || "-"}</span>
+                  <span>{formData?.payer?.id || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
-                  <span>{data?.payer?.name || "-"}</span>
+                  <span>{formData?.payer?.name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
-                  <span>{data?.payer?.email || "-"}</span>
+                  <span>{formData?.payer?.email || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Phone:</span>
-                  <span>{data?.payer?.phone || "-"}</span>
+                  <span>{formData?.payer?.phone || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bank:</span>
-                  <span>{data?.payer?.bank || "-"}</span>
+                  <span>{formData?.payer?.bank || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Account Number:</span>
-                  <span>{data?.payer?.account_number || "-"}</span>
+                  <span>{formData?.payer?.account_number || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Account Holder:</span>
-                  <span>{data?.payer?.account_holder_name || "-"}</span>
+                  <span>{formData?.payer?.account_holder_name || "-"}</span>
                 </div>
               </div>
             </AccordionContent>
@@ -114,31 +140,31 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span>{data?.payee?.id || "-"}</span>
+                  <span>{formData?.payee?.id || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
-                  <span>{data?.payee?.name || "-"}</span>
+                  <span>{formData?.payee?.name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
-                  <span>{data?.payee?.email || "-"}</span>
+                  <span>{formData?.payee?.email || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Phone:</span>
-                  <span>{data?.payee?.phone || "-"}</span>
+                  <span>{formData?.payee?.phone || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Bank:</span>
-                  <span>{data?.payee?.bank || "-"}</span>
+                  <span>{formData?.payee?.bank || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Account Number:</span>
-                  <span>{data?.payee?.account_number || "-"}</span>
+                  <span>{formData?.payee?.account_number || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Account Holder:</span>
-                  <span>{data?.payee?.account_holder_name || "-"}</span>
+                  <span>{formData?.payee?.account_holder_name || "-"}</span>
                 </div>
               </div>
             </AccordionContent>
@@ -150,12 +176,16 @@ export function StepFour({ form }: Props) {
             <AccordionContent>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
+                  <span className="text-muted-foreground">Transaction ID:</span>
+                  <span className="font-mono">{transactionId}</span>
+                </div>
+                <div className="flex justify-between">
                   <span className="text-muted-foreground">Title:</span>
-                  <span>{data?.transaction?.title || "-"}</span>
+                  <span>{formData?.transaction?.title || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Category:</span>
-                  <span>{data?.transaction?.category || "-"}</span>
+                  <span>{formData?.transaction?.category || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Amount:</span>
@@ -163,7 +193,7 @@ export function StepFour({ form }: Props) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Note:</span>
-                  <span>{data?.transaction?.note || "-"}</span>
+                  <span>{formData?.transaction?.note || "-"}</span>
                 </div>
               </div>
             </AccordionContent>
