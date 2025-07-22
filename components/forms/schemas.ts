@@ -42,9 +42,7 @@ export const stepTwoSchema = z.object({
 export const stepThreeSchema = z.object({
   transaction: z.object({
     title: z.string().min(2, { message: "Title is required" }),
-    category: z.string({
-      error: "Please select a category."
-    }),
+    category: z.string().min(1, { message: "Please select a category." }),
     amount: z.number().min(10000, { message: "Min. Rp10.000" }),
     note: z.string().optional()
   })
@@ -52,7 +50,7 @@ export const stepThreeSchema = z.object({
 
 export const stepFourSchema = z.object({
   payment_method: z.enum(paymentValues, {
-    error: "You need to select a payment method."
+    message: "You need to select a payment method."
   }),
   additional: z.object({
     isAcceptTerms: z.boolean().refine(val => val === true, {
