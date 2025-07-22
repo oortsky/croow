@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -17,6 +18,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { BadgeCheck } from "lucide-react";
 import { payments } from "@/constants/payments";
 
 
@@ -60,6 +63,32 @@ export function StepFour({ form }: Props) {
 
   const recommendation = getRecommendation();
 
+  // Auto-select recommended payment method when amount changes
+  useEffect(() => {
+    if (amount > 0 && !paymentMethod) {
+      form.setValue("payment_method", recommendation.recommended);
+    }
+  }, [amount, recommendation.recommended, paymentMethod, form]);
+
+  // Add badges to payment options
+  const paymentOptionsWithBadges = payments.map(payment => ({
+    ...payment,
+    label: payment.value === recommendation.recommended 
+      ? (
+          <div className="flex items-center justify-between w-full">
+            <span>{payment.label}</span>
+            <Badge
+              variant="secondary"
+              className="bg-red-500 text-white dark:bg-red-600 ml-2"
+            >
+              <BadgeCheck className="w-3 h-3 mr-1" />
+              Recommended
+            </Badge>
+          </div>
+        )
+      : payment.label
+  }));
+
   return (
     <>
       {/* 1. Payment Method */}
@@ -83,7 +112,7 @@ export function StepFour({ form }: Props) {
                 {...field}
                 value={field.value ?? ""}
                 onChange={field.onChange}
-                options={payments}
+                options={paymentOptionsWithBadges}
               />
             </FormControl>
             <FormMessage />

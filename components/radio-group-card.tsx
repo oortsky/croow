@@ -5,7 +5,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 type Option = {
   value: string;
-  label: string;
+  label: string | React.ReactNode;
   description?: string;
 };
 
@@ -36,7 +36,7 @@ export function RadioGroupCard({
             className="mt-1"
           />
           <div className="grid gap-1.5 font-normal">
-            <p className="text-sm leading-none font-medium">{option.label}</p>
+            <div className="text-sm leading-none font-medium">{option.label}</div>
             {option.description && (
               <p className="text-muted-foreground text-sm">
                 {option.description}
