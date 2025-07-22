@@ -105,6 +105,8 @@ export function MultiStepForm() {
         });
       }
     } else {
+      // Clear all errors for the current step before proceeding
+      form.clearErrors();
       setStep(prev => prev + 1);
     }
   };
