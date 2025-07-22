@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect } from "react";
@@ -33,6 +32,10 @@ export function StepFour({ form }: Props) {
 
   // Generate transaction ID
   const transactionId = `TRX-${Date.now().toString().slice(-8)}`;
+
+    // Generate payer and payee IDs
+  const payerId = `PYR-${Date.now().toString().slice(-8)}`;
+  const payeeId = `PYE-${Date.now().toString().slice(-8)}`;
 
   // Fee calculation based on your specifications
   const qrisCost = Math.floor(0.007 * amount); // 0.7% of transaction amount
@@ -123,7 +126,7 @@ export function StepFour({ form }: Props) {
       {/* 2. Transaction Review with Accordion */}
       <section className="mt-6">
         <h3 className="text-lg font-semibold mb-4">Transaction Review</h3>
-        
+
         <Accordion type="multiple" className="w-full">
           {/* Payer Information Accordion */}
           <AccordionItem value="payer">
@@ -132,7 +135,7 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span>{formData?.payer?.id || "-"}</span>
+                  <span className="font-mono">{payerId}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
@@ -169,7 +172,7 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span>{formData?.payee?.id || "-"}</span>
+                  <span className="font-mono">{payeeId}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
@@ -233,25 +236,25 @@ export function StepFour({ form }: Props) {
       {/* 3. Transaction Calculation */}
       <section className="mt-6 space-y-4 border rounded-md p-4 bg-muted">
         <h3 className="text-lg font-semibold">Payment Details</h3>
-        
+
         <div className="space-y-3 text-sm">
           <div className="flex justify-between">
             <span>Transaction Amount:</span>
             <span>Rp{amount.toLocaleString("id-ID")}</span>
           </div>
-          
+
           <div className="flex justify-between">
             <span>Transaction Cost ({paymentMethod === "QRIS" ? "0.7%" : "Fixed"}):</span>
             <span>Rp{transactionCost.toLocaleString("id-ID")}</span>
           </div>
-          
+
           <div className="flex justify-between">
             <span>Service Fee ({amount < 400000 ? "Fixed" : "2%"}):</span>
             <span>Rp{serviceFee.toLocaleString("id-ID")}</span>
           </div>
-          
+
           <hr className="my-2" />
-          
+
           <div className="flex justify-between font-semibold text-primary text-base">
             <span>Total Payment:</span>
             <span>Rp{total.toLocaleString("id-ID")}</span>
