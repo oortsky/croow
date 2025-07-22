@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
@@ -9,16 +10,18 @@ import {
   FormControl,
   FormMessage
 } from "@/components/ui/form";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RadioGroupCard } from "@/components/radio-group-card";
+import { Badge } from "@/components/ui/badge";
+import { BadgeCheck } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-import { BadgeCheck } from "lucide-react";
+import { RadioGroupCard } from "@/components/radio-group-card";
 import { payments } from "@/constants/payments";
 
 
