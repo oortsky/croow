@@ -24,6 +24,8 @@ export function StepOne({ form }: Props) {
   useEffect(() => {
     if (sameAsName && payerName) {
       form.setValue("payer.account_holder_name", payerName.toUpperCase());
+      // Trigger validation to clear any existing errors
+      form.trigger("payer.account_holder_name");
     }
   }, [sameAsName, payerName, form]);
 
