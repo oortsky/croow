@@ -48,9 +48,7 @@ export const stepThreeSchema = z.object({
     category: z.string().min(1, { message: "Please select a category." }),
     amount: z.number().min(10000, { message: "Min. Rp10.000" }),
     payment_fee: z.number().min(1, { message: "Payment fee is required." }),
-    service_fee: z
-      .number()
-      .min(8000, { message: "Min. service fee of IDR 8,000 or 2%." }),
+    service_fee: z.number().min(1, { message: "Service fee is required." }),
     total: z.number().min(1, { message: "Total payment is required." }),
     note: z.string().optional()
   })

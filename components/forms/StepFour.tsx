@@ -61,6 +61,12 @@ export function StepFour({ form }: Props) {
     }
   }, [amount, recommendation.recommended, form]);
 
+  useEffect(() => {
+    form.setValue("transaction.payment_fee", paymentFee);
+    form.setValue("transaction.service_fee", serviceFee);
+    form.setValue("transaction.total", total);
+  }, [paymentFee, serviceFee, total, form]);
+
   const paymentOptionsWithBadges = payments.map(payment => ({
     ...payment,
     label:
