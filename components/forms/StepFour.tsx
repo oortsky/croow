@@ -19,79 +19,65 @@ import {
   Accordion,
   AccordionContent,
   AccordionItem,
-  AccordionTrigger,
+  AccordionTrigger
 } from "@/components/ui/accordion";
 import { RadioGroupCard } from "@/components/radio-group-card";
 import { payments } from "@/constants/payments";
 
-
 type Props = { form: UseFormReturn<any> };
 
 export function StepFour({ form }: Props) {
-  // Watch form values for real-time updates
   const formData = form.watch();
   const amount = Number(formData?.transaction?.amount ?? 0);
   const paymentMethod = formData?.payment_method;
 
-  // Generate unique IDs
-  const baseTimestamp = Date.now().toString();
-  const transactionId = `TRX-${baseTimestamp.slice(-8)}`;
-  const payerId = `PYR-${(Date.now() + Math.floor(Math.random() * 1000)).toString().slice(-8)}`;
-  const payeeId = `PYE-${(Date.now() + Math.floor(Math.random() * 10000)).toString().slice(-8)}`;
+  const qrisFee = Math.floor(0.007 * amount);
+  const vaFee = 4000;
 
-  // Fee calculation based on your specifications
-  const qrisCost = Math.floor(0.007 * amount); // 0.7% of transaction amount
-  const vaCost = 4000; // Fixed IDR 4,000 for VA
+  const paymentFee = paymentMethod === "QRIS" ? qrisFee : vaFee;
 
-  const transactionCost = paymentMethod === "QRIS" ? qrisCost : vaCost;
+  const serviceFee =
+    amount < 500000 ? 8000 : Math.min(Math.floor(0.016 * amount), 50000);
 
-  const serviceFee = amount < 400000 
-    ? 8000 // IDR 8,000 if less than IDR 400,000
-    : Math.floor(0.02 * amount); // 2% if more than IDR 400,000
+  const total = amount + paymentFee + serviceFee;
 
-  const total = amount + transactionCost + serviceFee;
-
-  // Recommendation system
   const getRecommendation = () => {
-    if (qrisCost > 4000) {
+    if (qrisFee > 4000) {
       return {
-        recommended: "VA",
-        reason: `QRIS cost (Rp${qrisCost.toLocaleString("id-ID")}) is higher than VA cost (Rp4,000)`
+        recommended: "VA"
       };
     } else {
       return {
-        recommended: "QRIS",
-        reason: `QRIS cost (Rp${qrisCost.toLocaleString("id-ID")}) is lower than VA cost (Rp4,000)`
+        recommended: "QRIS"
       };
     }
   };
 
   const recommendation = getRecommendation();
 
-  // Auto-select recommended payment method when amount changes or recommendation changes
   useEffect(() => {
     if (amount > 0) {
       form.setValue("payment_method", recommendation.recommended);
     }
   }, [amount, recommendation.recommended, form]);
 
-  // Add badges to payment options
   const paymentOptionsWithBadges = payments.map(payment => ({
     ...payment,
-    label: payment.value === recommendation.recommended 
-      ? (
-          <div className="flex items-center justify-between w-full">
-            <span>{payment.label}</span>
-            <Badge
-              variant="secondary"
-              className="bg-red-500 text-white dark:bg-red-600 ml-2"
-            >
-              <BadgeCheck className="w-3 h-3 mr-1" />
-              Recommended
-            </Badge>
-          </div>
-        )
-      : payment.label
+    label:
+      payment.value === recommendation.recommended ? (
+        <div className="flex items-center justify-between w-full">
+          <span>{payment.label}</span>
+          <Badge
+            variant="secondary"
+            className="bg-red-500 text-white dark:bg-red-600 ml-2"
+          >
+            <BadgeCheck className="w-3 h-3 mr-1" />
+            Recommended
+          </Badge>
+        </div>
+      ) : (
+        payment.label
+      )
   }));
 
   return (
@@ -103,7 +89,7 @@ export function StepFour({ form }: Props) {
         render={({ field }) => (
           <FormItem>
             <FormLabel>Payment Method</FormLabel>
-            
+
             <FormControl>
               <RadioGroupCard
                 {...field}
@@ -129,7 +115,9 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span className="font-mono">{payerId}</span>
+                  <span className="font-mono">
+                    {formData?.payer?.id || "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
@@ -166,7 +154,9 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">ID:</span>
-                  <span className="font-mono">{payeeId}</span>
+                  <span className="font-mono">
+                    {formData?.payee?.id || "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Name:</span>
@@ -203,7 +193,9 @@ export function StepFour({ form }: Props) {
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Transaction ID:</span>
-                  <span className="font-mono">{transactionId}</span>
+                  <span className="font-mono">
+                    {formData?.transaction?.id || "-"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Title:</span>
@@ -238,12 +230,14 @@ export function StepFour({ form }: Props) {
           </div>
 
           <div className="flex justify-between">
-            <span>Transaction Cost ({paymentMethod === "QRIS" ? "0.7%" : "Fixed"}):</span>
-            <span>Rp{transactionCost.toLocaleString("id-ID")}</span>
+            <span>
+              Transaction Cost ({paymentMethod === "QRIS" ? "0.7%" : "Fixed"}):
+            </span>
+            <span>Rp{paymentFee.toLocaleString("id-ID")}</span>
           </div>
 
           <div className="flex justify-between">
-            <span>Service Fee ({amount < 400000 ? "Fixed" : "2%"}):</span>
+            <span>Service Fee ({amount < 500000 ? "Fixed" : "2%"}):</span>
             <span>Rp{serviceFee.toLocaleString("id-ID")}</span>
           </div>
 
@@ -259,7 +253,7 @@ export function StepFour({ form }: Props) {
       {/* 4. Terms & Privacy Checkboxes */}
       <FormField
         control={form.control}
-        name="additional.isAcceptTerms"
+        name="additional.isAcceptTermsAndPrivacy"
         render={({ field }) => (
           <FormItem className="mt-6">
             <div className="flex items-start gap-3">

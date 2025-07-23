@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { generateId } from "@/utils/id";
 
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
@@ -38,6 +39,7 @@ export function MultiStepForm() {
     mode: "onChange",
     defaultValues: {
       payer: {
+        id: "",
         name: "",
         email: "",
         phone: "",
@@ -47,6 +49,7 @@ export function MultiStepForm() {
         same_as_name: false
       },
       payee: {
+        id: "",
         name: "",
         email: "",
         phone: "",
@@ -56,15 +59,18 @@ export function MultiStepForm() {
         same_as_name: false
       },
       transaction: {
+        id: "",
         title: "",
         category: "",
         amount: 0,
+        payment_fee: 0,
+        service_fee: 0,
+        total: 0,
         note: ""
       },
       payment_method: "",
       additional: {
-        isAcceptTerms: false,
-        isAcceptPrivacy: false
+        isAcceptTermsAndPrivacy: false
       }
     }
   });
@@ -83,10 +89,22 @@ export function MultiStepForm() {
   const handleNext = async () => {
     const currentStepFields = getCurrentStepFields();
     const isValid = await form.trigger(currentStepFields as any);
-    
-    if (isValid) {
-      setStep(prev => prev + 1);
+
+    if (!isValid) return;
+
+    if (step === 2 && !form.getValues("payer.id")) {
+      form.setValue("payer.id", generateId("PYR"));
     }
+
+    if (step === 2 && !form.getValues("payee.id")) {
+      form.setValue("payee.id", generateId("PYE"));
+    }
+
+    if (step === 3 && !form.getValues("transaction.id")) {
+      form.setValue("transaction.id", generateId("TRX"));
+    }
+
+    setStep(prev => prev + 1);
   };
 
   const getCurrentStepFields = () => {
@@ -94,7 +112,7 @@ export function MultiStepForm() {
       case 1:
         return [
           "payer.name",
-          "payer.email", 
+          "payer.email",
           "payer.phone",
           "payer.bank",
           "payer.account_number",
@@ -104,7 +122,7 @@ export function MultiStepForm() {
         return [
           "payee.name",
           "payee.email",
-          "payee.phone", 
+          "payee.phone",
           "payee.bank",
           "payee.account_number",
           "payee.account_holder_name"
@@ -117,11 +135,7 @@ export function MultiStepForm() {
           "transaction.note"
         ];
       case 4:
-        return [
-          "payment_method",
-          "additional.isAcceptTerms",
-          "additional.isAcceptPrivacy"
-        ];
+        return ["payment_method", "additional.isAcceptTermsAndPrivacy"];
       default:
         return [];
     }
