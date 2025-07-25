@@ -3,13 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ModeToggle } from "@/components/mode-toggle";
 
 export default function Page() {
   const [count, setCount] = useState(0);
 
   return (
-    <div className="font-sans">
+    <div className="h-[1000px] font-sans">
       <h1 className="text-4xl font-logo tracking-tighter text-primary drop-shadow-lg">
         TROOW
       </h1>
@@ -23,7 +22,6 @@ export default function Page() {
       <Button asChild>
         <Link href="/transaction/new">Try Now</Link>
       </Button>
-      <ModeToggle />
     </div>
   );
 }

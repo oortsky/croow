@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sixtyfour, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { Navbar } from "@/components/navbar";
 import "./globals.css";
 
 const sixtyfour = Sixtyfour({
@@ -40,8 +41,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Navbar />
           <main>{children}</main>
-          <Toaster />
+          <Toaster position="top-center" />
         </ThemeProvider>
       </body>
     </html>
