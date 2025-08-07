@@ -1,0 +1,9 @@
+credit_card: z.object({
+    secure: z.boolean().default(true)
+  }),
+  customer_details: z.object({
+    first_name: z.string().min(3, "First name is required."),
+    last_name: z.string().min(3, "Last name is required."),
+    email: z.string().email("Invalid email address."),
+    phone: z.string().regex(/^62\d{9,15}$/, "Phone number at least 11 digits.")
+  })
