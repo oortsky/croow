@@ -7,7 +7,7 @@ import axios from "axios";
 import { generateId } from "@/utils/id";
 
 export default function Page() {
-    // TODO: Separate this script into utils or lib
+  // TODO: Separate this script into utils or lib
   const handleClick = async () => {
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BASE_URL!}/api/midtrans/token`,
@@ -19,11 +19,13 @@ export default function Page() {
       }
     );
 
-    window.snap.pay(response?.data?.token, {
-      onSuccess: result => console.log("Success:", result),
-      onPending: result => console.log("Pending:", result),
-      onError: err => console.error("Error:", err)
-    });
+    if (typeof window !== "undefined" && window.snap) {
+      window.snap.pay(response?.data?.token, {
+        onSuccess: result => console.log("Success:", result),
+        onPending: result => console.log("Pending:", result),
+        onError: err => console.error("Error:", err)
+      });
+    }
   };
 
   return (

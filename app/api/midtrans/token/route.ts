@@ -22,7 +22,7 @@ export async function POST(request: Request) {
       return new Response(
         JSON.stringify({
           error: "Invalid request",
-          details: parseResult.error.errors
+          details: parseResult.error
         }),
         { status: 400, headers: { "Content-Type": "application/json" } }
       );

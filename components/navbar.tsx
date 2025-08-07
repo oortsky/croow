@@ -23,7 +23,7 @@ import { ModeToggle } from "@/components/mode-toggle";
 import { toast } from "sonner";
 
 const menuList: {
-  id: integer;
+  id: number;
   title: string;
   href: string;
   description: string;
