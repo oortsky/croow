@@ -78,7 +78,7 @@ const menuList: {
   }
 ];
 
-export const Navbar = () => {
+export default function Navbar() {
   return (
     <section className="w-full sticky top-0 p-4 bg-transparent backdrop-blur-md rounded-b-md shadow-lg z-50 dark:backdrop-brightness-50">
       <div className="container mx-auto">
@@ -115,4 +115,4 @@ export const Navbar = () => {
       </div>
     </section>
   );
-};
+}

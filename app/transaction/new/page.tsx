@@ -7,7 +7,7 @@ export const metadata = {
 
 export default function Page() {
   return (
-    <main className="container w-full h-screen mx-auto p-4 font-sans">
+    <main className="container w-full min-h-screen mx-auto p-4 font-sans">
       <h1 className="text-xl font-bold mb-4">New Transaction!</h1>
       <MultiStepForm />
     </main>

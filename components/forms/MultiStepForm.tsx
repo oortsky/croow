@@ -4,13 +4,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import axios from "axios";
 import { generateId } from "@/utils/id";
-
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-
 import { StepOne } from "./StepOne";
 import { StepTwo } from "./StepTwo";
 import { StepThree } from "./StepThree";
@@ -75,12 +74,33 @@ export function MultiStepForm() {
     }
   });
 
-  const onSubmit = (data: z.infer<typeof fullFormSchema>) => {
+  const onSubmit = async (data: z.infer<typeof fullFormSchema>) => {
     console.log("Data submitted:", data);
+
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL!}/api/midtrans/token`,
+      {
+        transaction_details: {
+          order_id: data.transaction.id,
+          gross_amount: data.transaction.total
+        }
+      }
+    );
+
+    if (typeof window !== "undefined" && window.snap) {
+      window.snap.pay(response?.data?.token, {
+        onSuccess: result => console.log("Success:", result),
+        onPending: result => console.log("Pending:", result),
+        onError: err => console.error("Error:", err)
+      });
+    }
+
     toast("You submitted the following values", {
       description: (
         <pre className="mt-2 w-full rounded-md bg-neutral-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          <code className="text-white">
+            {JSON.stringify(data.transaction, null, 2)}
+          </code>
         </pre>
       )
     });

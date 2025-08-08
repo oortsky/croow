@@ -3,7 +3,8 @@ import Script from "next/script";
 import { Sixtyfour, Geist, Geist_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { Navbar } from "@/components/navbar";
+import Navbar from "@/components/navbar";
+import Footer from "@/components/footer";
 import "./globals.css";
 
 const sixtyfour = Sixtyfour({
@@ -44,6 +45,7 @@ export default function RootLayout({
         >
           <Navbar />
           <main>{children}</main>
+          <Footer />
           <Toaster position="top-center" />
         </ThemeProvider>
         <Script
