@@ -1,11 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
+import type { z } from "zod";
 import axios from "axios";
-import { generateId } from "@/utils/id";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -14,14 +13,17 @@ import { StepOne } from "./StepOne";
 import { StepTwo } from "./StepTwo";
 import { StepThree } from "./StepThree";
 import { StepFour } from "./StepFour";
-
+import { getUserByEmail } from "@/app/actions/read";
+import { createUser, createTransaction } from "@/app/actions/create";
+import { updateUser } from "@/app/actions/update";
 import {
-  stepOneSchema,
-  stepTwoSchema,
-  stepThreeSchema,
-  stepFourSchema,
-  fullFormSchema
-} from "./schemas";
+  fullFormSchema,
+  StatusEnum
+} from "@/lib/schemas";
+import { randomID } from "@/utils/id";
+
+type FullFormInput = z.input<typeof fullFormSchema>;
+type FullFormOutput = z.infer<typeof fullFormSchema>;
 
 const stepTitles = [
   "Payer Information",
@@ -33,74 +35,78 @@ const stepTitles = [
 export function MultiStepForm() {
   const [step, setStep] = useState(1);
 
-  const form = useForm<z.infer<typeof fullFormSchema>>({
-    resolver: zodResolver(fullFormSchema),
-    mode: "onChange",
+  const form = useForm<FullFormInput>({
+    resolver: zodResolver(fullFormSchema) as unknown as Resolver<FullFormInput>,
+    mode: "onBlur",
+    reValidateMode: "onChange",
     defaultValues: {
       payer: {
         id: "",
-        name: "",
+        first_name: "",
+        last_name: "",
         email: "",
         phone: "",
-        bank: "",
+        bank: undefined,
         account_number: "",
         account_holder_name: "",
         same_as_name: false
       },
       payee: {
         id: "",
-        name: "",
+        first_name: "",
+        last_name: "",
         email: "",
         phone: "",
-        bank: "",
+        bank: undefined,
         account_number: "",
         account_holder_name: "",
         same_as_name: false
       },
       transaction: {
         id: "",
-        title: "",
-        category: "",
+        name: "",
+        category: undefined,
         amount: 0,
-        payment_fee: 0,
         service_fee: 0,
         total: 0,
-        note: ""
+        note: "",
+        status: StatusEnum.Pending
       },
-      payment_method: "",
       additional: {
         isAcceptTermsAndPrivacy: false
       }
     }
   });
 
-  const onSubmit = async (data: z.infer<typeof fullFormSchema>) => {
-    console.log("Data submitted:", data);
+  const onSubmit = async (rawData: FullFormInput) => {
+    const data: FullFormOutput = fullFormSchema.parse(rawData);
 
     const response = await axios.post(
       `${process.env.NEXT_PUBLIC_BASE_URL!}/api/midtrans/token`,
-      {
-        transaction_details: {
-          order_id: data.transaction.id,
-          gross_amount: data.transaction.total
-        }
-      }
+      data.transaction.snap
     );
 
-    if (typeof window !== "undefined" && window.snap) {
-      window.snap.pay(response?.data?.token, {
-        onSuccess: result => console.log("Success:", result),
-        onPending: result => console.log("Pending:", result),
-        onError: err => console.error("Error:", err)
+    if (typeof window !== "undefined" && (window as any).snap) {
+      (window as any).snap.pay(response?.data?.token, {
+        onSuccess: async (result: any) => {
+          try {
+            await createUser(data.payer);
+            await createUser(data.payee);
+            await createTransaction(data.transaction);
+            console.log("Success:", result);
+          } catch (error) {
+            console.error("Error creating records:", error);
+          }
+        },
+        onPending: (r: any) => console.log("Pending:", r),
+        onError: (e: any) => console.error("Snap error:", e)
       });
     }
 
     toast("You submitted the following values", {
       description: (
         <pre className="mt-2 w-full rounded-md bg-neutral-950 p-4">
-          <code className="text-white">
-            {JSON.stringify(data.transaction, null, 2)}
-          </code>
+          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
         </pre>
       )
     });
@@ -112,16 +118,16 @@ export function MultiStepForm() {
 
     if (!isValid) return;
 
-    if (step === 2 && !form.getValues("payer.id")) {
-      form.setValue("payer.id", generateId("PYR"));
+    if (step === 1 && !form.getValues("payer.id")) {
+      form.setValue("payer.id", randomID("PYR"));
     }
 
     if (step === 2 && !form.getValues("payee.id")) {
-      form.setValue("payee.id", generateId("PYE"));
+      form.setValue("payee.id", randomID("PYE"));
     }
 
     if (step === 3 && !form.getValues("transaction.id")) {
-      form.setValue("transaction.id", generateId("TRX"));
+      form.setValue("transaction.id", randomID("TRX"));
     }
 
     setStep(prev => prev + 1);
@@ -131,7 +137,8 @@ export function MultiStepForm() {
     switch (step) {
       case 1:
         return [
-          "payer.name",
+          "payer.first_name",
+          "payer.last_name",
           "payer.email",
           "payer.phone",
           "payer.bank",
@@ -140,7 +147,8 @@ export function MultiStepForm() {
         ];
       case 2:
         return [
-          "payee.name",
+          "payee.first_name",
+          "payee.last_name",
           "payee.email",
           "payee.phone",
           "payee.bank",
@@ -149,13 +157,13 @@ export function MultiStepForm() {
         ];
       case 3:
         return [
-          "transaction.title",
+          "transaction.name",
           "transaction.category",
           "transaction.amount",
           "transaction.note"
         ];
       case 4:
-        return ["payment_method", "additional.isAcceptTermsAndPrivacy"];
+        return ["additional.isAcceptTermsAndPrivacy"];
       default:
         return [];
     }

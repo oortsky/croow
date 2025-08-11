@@ -14,32 +14,48 @@ import { Combobox } from "@/components/ui/combobox";
 import { banks } from "@/constants/banks";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { getFullName } from "@/utils/fullname";
 
 type Props = { form: UseFormReturn<any> };
 
 export function StepOne({ form }: Props) {
   const sameAsName = form.watch("payer.same_as_name") ?? false;
-  const payerName = form.watch("payer.name") ?? "";
+  const fullName = getFullName(
+    form.watch("payer.first_name"),
+    form.watch("payer.last_name")
+  );
 
   useEffect(() => {
-    if (sameAsName && payerName) {
-      form.setValue("payer.account_holder_name", payerName.toUpperCase());
-      // Trigger validation to clear any existing errors
+    if (sameAsName && fullName) {
+      form.setValue("payer.account_holder_name", fullName.toUpperCase());
       form.trigger("payer.account_holder_name");
     } else if (!sameAsName) {
-      // Clear the field when switch is turned off
       form.setValue("payer.account_holder_name", "");
     }
-  }, [sameAsName, payerName, form]);
+  }, [sameAsName, fullName, form]);
 
   return (
     <>
       <FormField
         control={form.control}
-        name="payer.name"
+        name="payer.first_name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>First Name</FormLabel>
+            <FormControl>
+              <Input {...field} value={field.value ?? ""} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="payer.last_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Last Name</FormLabel>
             <FormControl>
               <Input {...field} value={field.value ?? ""} />
             </FormControl>
@@ -78,10 +94,10 @@ export function StepOne({ form }: Props) {
                   inputMode="numeric"
                   placeholder="81234567890"
                   className="flex-1"
-                  value={field.value?.replace(/^62/, "") ?? ""}
+                  value={field.value?.replace(/^\+62/, "") ?? ""}
                   onChange={e => {
                     const onlyDigits = e.target.value.replace(/\D/g, "");
-                    field.onChange(`62${onlyDigits}`);
+                    field.onChange(`+62${onlyDigits}`);
                   }}
                 />
               </div>
@@ -117,7 +133,7 @@ export function StepOne({ form }: Props) {
           <FormItem>
             <FormLabel>Account Number</FormLabel>
             <FormControl>
-              <Input type="number" {...field} value={field.value ?? ""} />
+              <Input inputMode="numeric" {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>

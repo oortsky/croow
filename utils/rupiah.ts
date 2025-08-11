@@ -1,4 +1,4 @@
-export function formatRupiahNoPrefix(value?: number | string): string {
+export function formatRupiah(value?: number | string): string {
   if (!value) return "";
   const number =
     typeof value === "string" ? parseInt(value.replace(/\D/g, "")) : value;

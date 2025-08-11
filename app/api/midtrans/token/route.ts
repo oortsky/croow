@@ -1,12 +1,6 @@
 import midtransClient from "midtrans-client";
 import { z } from "zod";
-
-const parameterSchema = z.object({
-  transaction_details: z.object({
-    order_id: z.string().min(1, "Order ID is required."),
-    gross_amount: z.number().min(1, "Gross amount is required.")
-  })
-});
+import { snapSchema } from "@/lib/schemas";
 
 const snap = new midtransClient.Snap({
   isProduction: false,
@@ -16,7 +10,7 @@ const snap = new midtransClient.Snap({
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parseResult = parameterSchema.safeParse(body);
+    const parseResult = snapSchema.safeParse(body);
 
     if (!parseResult.success) {
       return new Response(

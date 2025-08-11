@@ -1,9 +1,248 @@
 credit_card: z.object({
     secure: z.boolean().default(true)
   }),
-  customer_details: z.object({
-    first_name: z.string().min(3, "First name is required."),
-    last_name: z.string().min(3, "Last name is required."),
-    email: z.string().email("Invalid email address."),
-    phone: z.string().regex(/^62\d{9,15}$/, "Phone number at least 11 digits.")
+  
+  item_details: z.object({
+    name: z.string().min(1, "Transaction name/title is required."),
+    price: z.number().min(1, "Transaction price/amount is required.")
+    // Quantity
+  }),
+  
+  
+        {/* 1. Payment Method */}
+      <FormField
+        control={form.control}
+        name="payment_method"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Payment Method</FormLabel>
+
+            <FormControl>
+              <RadioGroupCard
+                {...field}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+                options={paymentOptionsWithBadges}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      
+      
+      
+      
+      
+    const response = await axios.post(
+      `${process.env.NEXT_PUBLIC_BASE_URL!}/api/midtrans/token`,
+      {
+        transaction_details: {
+          order_id: data.transaction.id,
+          gross_amount: data.transaction.total
+        }
+      }
+    );
+
+    if (typeof window !== "undefined" && window.snap) {
+      window.snap.pay(response?.data?.token, {
+        onSuccess: async result => {
+          console.log("Success:", result);
+          try {
+            await createUser(data.payer);
+            await createUser(data.payee);
+            await createTransaction(data.transaction);
+          } catch (error) {
+            console.error("Error:", error);
+          }
+        },
+        onPending: result => console.log("Pending:", result),
+        onError: err => console.error("Error:", err)
+      });
+    }
+    
+    
+        if (step === 1 && !form.getValues("payer.id")) {
+      form.setValue("payer.id", generateId("PYR"));
+    }
+
+    if (step === 2 && !form.getValues("payee.id")) {
+      form.setValue("payee.id", generateId("PYE"));
+    }
+
+    if (step === 3 && !form.getValues("transaction.id")) {
+      form.setValue("transaction.payer_id", form.getValues("payer.id"));
+      form.setValue("transaction.payee_id", form.getValues("payee.id"));
+      form.setValue("transaction.id", generateId("TRX"));
+    }
+    
+    
+    
+    
+    
+    
+import { z } from "zod";
+import { randomID } from "@/utils/id";
+
+export enum StatusEnum {
+  PENDING = "pending",
+  PAID = "paid",
+  PROCEEDED = "proceeded",
+  RECEIVED = "received",
+  RELEASED = "released",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
+  REFUNDED = "refunded"
+}
+
+export const userSchema = z.object({
+  id: z.string().default(() => randomID("USR")),
+  first_name: z.string().min(2, { message: "First name is required." }),
+  last_name: z.string().min(2, { message: "Last name is required." }),
+  email: z.string().email({ message: "Invalid email address." }),
+  phone: z.string().regex(/^\+62\d{9,13}$/, {
+    message: "Phone number at least 11 digits."
+  }),
+  bank: z.string().min(1, { message: "Please select a bank." }),
+  account_number: z.string().min(5, { message: "Account number is required" }),
+  account_holder_name: z
+    .string()
+    .min(2, { message: "Account holder name is required." }),
+  same_as_name: z.boolean().optional()
+});
+
+export const transactionSchema = z
+  .object({
+    id: z.string().default(() => randomID("TRX")),
+    payer_id: z.string().min(1, { message: "Payer ID is required." }),
+    payee_id: z.string().min(1, { message: "Payee ID is required." }),
+    name: z.string().min(2, { message: "Name is required." }),
+    category: z.string().min(1, { message: "Please select a category." }),
+    amount: z.number().min(10000, { message: "Min. Rp10.000" }),
+    service_fee: z.number().min(8000, { message: "Min. Rp8.000" }),
+    total: z.number().min(18000, { message: "Min. Rp.18.000" }),
+    note: z.string().optional(),
+    status: z.nativeEnum(StatusEnum),
+    snap: z.object({
+      transaction_details: z
+        .object({
+          order_id: z.string().min(1, "Order ID is required.").optional(),
+          gross_amount: z
+            .number()
+            .min(1, "Gross amount is required.")
+            .optional()
+        })
+        .partial(),
+      item_details: z
+        .array(
+          z.object({
+            name: z.string().min(1, "Item name is required."),
+            price: z.number().min(1, "Item price is required."),
+            quantity: z.number().min(1, "Item quantity is required.").default(1)
+          })
+        )
+        .optional(),
+      customer_details: z
+        .object({
+          first_name: z.string().min(3, "First name is required."),
+          last_name: z.string().min(3, "Last name is required."),
+          email: z.string().email("Invalid email address."),
+          phone: z
+            .string()
+            .regex(/^\+62\d{9,13}$/, "Phone number at least 11 digits.")
+        })
+        .optional()
+    })
   })
+  .transform(data => {
+    const id = data.id || randomID("TRX");
+
+    return {
+      ...data,
+      id,
+      snap: {
+        ...data.snap,
+        transaction_details: {
+          order_id: id,
+          gross_amount: data.total
+        },
+        item_details: [
+          { name: data.name, price: data.amount, quantity: 1 },
+          { name: "Service Fee", price: data.service_fee, quantity: 1 }
+        ],
+        customer_details: data.snap.customer_details
+      }
+    };
+  });
+
+// Additional schema
+export const additionalSchema = z.object({
+  isAcceptTermsAndPrivacy: z.boolean().refine(val => val === true, {
+    message: "You must accept the terms and privacy policy."
+  })
+});
+
+// Step schemas
+export const stepOneSchema = z.object({
+  payer: userSchema
+});
+
+export const stepTwoSchema = z.object({
+  payee: userSchema
+});
+
+export const stepThreeSchema = z.object({
+  transaction: transactionSchema
+});
+
+export const stepFourSchema = z.object({
+  additional: additionalSchema
+});
+
+// Full form schema with integration transform
+export const fullFormSchema = stepOneSchema
+  .merge(stepTwoSchema)
+  .merge(stepThreeSchema)
+  .merge(stepFourSchema)
+  .transform(data => {
+    const payer_id = data.payer.id;
+    const payee_id = data.payee.id;
+
+    const transaction = {
+      ...data.transaction,
+      payer_id,
+      payee_id,
+      snap: {
+        ...data.transaction.snap,
+        transaction_details: {
+          order_id: data.transaction.id,
+          gross_amount: data.transaction.total
+        },
+        item_details: [
+          {
+            name: data.transaction.name,
+            price: data.transaction.amount,
+            quantity: 1
+          },
+          {
+            name: "Service Fee",
+            price: data.transaction.service_fee,
+            quantity: 1
+          }
+        ],
+        customer_details: {
+          first_name: data.payer.first_name,
+          last_name: data.payer.last_name,
+          email: data.payer.email,
+          phone: data.payer.phone
+        }
+      }
+    };
+
+    return {
+      ...data,
+      transaction
+    };
+  });
+  

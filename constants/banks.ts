@@ -1,12 +1,8 @@
 export const banks = [
-  { value: "BCA", label: "BCA" },
-  { value: "BRI", label: "BRI" },
-  { value: "BNI", label: "BNI" },
-  { value: "Mandiri", label: "Mandiri" },
-  { value: "Permata", label: "Permata" },
-  { value: "CIMB", label: "CIMB" },
-  { value: "Jago", label: "Jago" },
-  { value: "SeaBank", label: "SeaBank" }
+  { value: "bca", label: "BCA" },
+  { value: "bri", label: "BRI" },
+  { value: "bni", label: "BNI" },
+  { value: "mandiri", label: "Mandiri" },
+  { value: "permata", label: "Permata" },
+  { value: "cimb", label: "CIMB" },
 ];
-
-export const banksValues = banks.map(b => b.value);

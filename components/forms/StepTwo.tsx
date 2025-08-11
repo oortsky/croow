@@ -14,29 +14,48 @@ import { Combobox } from "@/components/ui/combobox";
 import { banks } from "@/constants/banks";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { getFullName } from "@/utils/fullname";
 
 type Props = { form: UseFormReturn<any> };
 
 export function StepTwo({ form }: Props) {
   const sameAsName = form.watch("payee.same_as_name") ?? false;
-  const payeeName = form.watch("payee.name") ?? "";
+  const fullName = getFullName(
+    form.watch("payee.first_name"),
+    form.watch("payee.last_name")
+  );
 
   useEffect(() => {
-    if (sameAsName && payeeName) {
-      form.setValue("payee.account_holder_name", payeeName.toUpperCase());
-      // Trigger validation to clear any existing errors
+    if (sameAsName && fullName) {
+      form.setValue("payee.account_holder_name", fullName.toUpperCase());
       form.trigger("payee.account_holder_name");
+    } else if (!sameAsName) {
+      form.setValue("payee.account_holder_name", "");
     }
-  }, [sameAsName, payeeName, form]);
+  }, [sameAsName, fullName, form]);
 
   return (
     <>
       <FormField
         control={form.control}
-        name="payee.name"
+        name="payee.first_name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Name</FormLabel>
+            <FormLabel>First Name</FormLabel>
+            <FormControl>
+              <Input {...field} value={field.value ?? ""} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="payee.last_name"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Last Name</FormLabel>
             <FormControl>
               <Input {...field} value={field.value ?? ""} />
             </FormControl>
@@ -75,10 +94,10 @@ export function StepTwo({ form }: Props) {
                   inputMode="numeric"
                   placeholder="81234567890"
                   className="flex-1"
-                  value={field.value?.replace(/^62/, "") ?? ""}
-                  onChange={(e) => {
+                  value={field.value?.replace(/^\+62/, "") ?? ""}
+                  onChange={e => {
                     const onlyDigits = e.target.value.replace(/\D/g, "");
-                    field.onChange(`62${onlyDigits}`);
+                    field.onChange(`+62${onlyDigits}`);
                   }}
                 />
               </div>
@@ -114,7 +133,7 @@ export function StepTwo({ form }: Props) {
           <FormItem>
             <FormLabel>Account Number</FormLabel>
             <FormControl>
-              <Input type="number" {...field} value={field.value ?? ""} />
+              <Input inputMode="numeric" {...field} value={field.value ?? ""} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -135,7 +154,7 @@ export function StepTwo({ form }: Props) {
                 <Switch
                   id="sameAsName"
                   checked={sameAsName}
-                  onCheckedChange={(val) =>
+                  onCheckedChange={val =>
                     form.setValue("payee.same_as_name", val)
                   }
                 />
@@ -146,7 +165,7 @@ export function StepTwo({ form }: Props) {
               <Input
                 {...field}
                 value={field.value ?? ""}
-                onChange={(e) => field.onChange(e.target.value.toUpperCase())}
+                onChange={e => field.onChange(e.target.value.toUpperCase())}
                 disabled={sameAsName}
               />
             </FormControl>

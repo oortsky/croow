@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
 import { categories } from "@/constants/categories";
-import { formatRupiahNoPrefix, parseRupiah } from "@/utils/rupiah";
+import { formatRupiah, parseRupiah } from "@/utils/rupiah";
 
 type Props = { form: UseFormReturn<any> };
 
@@ -21,10 +21,10 @@ export function StepThree({ form }: Props) {
     <>
       <FormField
         control={form.control}
-        name="transaction.title"
+        name="transaction.name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Title</FormLabel>
+            <FormLabel>Name</FormLabel>
             <FormControl>
               <Input {...field} value={field.value ?? ""} />
             </FormControl>
@@ -67,7 +67,7 @@ export function StepThree({ form }: Props) {
                   inputMode="numeric"
                   className="flex-1"
                   placeholder="10.000"
-                  value={formatRupiahNoPrefix(field.value ?? 0)}
+                  value={formatRupiah(field.value ?? 0)}
                   onChange={(e) => {
                     const raw = parseRupiah(e.target.value);
                     field.onChange(raw);

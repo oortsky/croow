@@ -13,103 +13,32 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
-import { BadgeCheck } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger
 } from "@/components/ui/accordion";
-import { RadioGroupCard } from "@/components/radio-group-card";
-import { payments } from "@/constants/payments";
 
 type Props = { form: UseFormReturn<any> };
 
 export function StepFour({ form }: Props) {
   const formData = form.watch();
   const amount = Number(formData?.transaction?.amount ?? 0);
-  const paymentMethod = formData?.payment_method;
-
-  const qrisFee = Math.floor(0.007 * amount);
-  const vaFee = 4000;
-
-  const paymentFee = paymentMethod === "QRIS" ? qrisFee : vaFee;
 
   const serviceFee =
     amount < 500000 ? 8000 : Math.min(Math.floor(0.016 * amount), 50000);
 
-  const total = amount + paymentFee + serviceFee;
-
-  const getRecommendation = () => {
-    if (qrisFee > 4000) {
-      return {
-        recommended: "VA"
-      };
-    } else {
-      return {
-        recommended: "QRIS"
-      };
-    }
-  };
-
-  const recommendation = getRecommendation();
+  const total = amount + serviceFee;
 
   useEffect(() => {
-    if (amount > 0) {
-      form.setValue("payment_method", recommendation.recommended);
-    }
-  }, [amount, recommendation.recommended, form]);
-
-  useEffect(() => {
-    form.setValue("transaction.payment_fee", paymentFee);
     form.setValue("transaction.service_fee", serviceFee);
     form.setValue("transaction.total", total);
-  }, [paymentFee, serviceFee, total, form]);
-
-  const paymentOptionsWithBadges = payments.map(payment => ({
-    ...payment,
-    label:
-      payment.value === recommendation.recommended ? (
-        <div className="flex items-center justify-between w-full">
-          <span>{payment.label}</span>
-          <Badge
-            variant="secondary"
-            className="bg-red-500 text-white dark:bg-red-600 ml-2"
-          >
-            <BadgeCheck className="w-3 h-3 mr-1" />
-            Recommended
-          </Badge>
-        </div>
-      ) : (
-        payment.label
-      )
-  }));
+  }, [serviceFee, total, form]);
 
   return (
     <>
-      {/* 1. Payment Method */}
-      <FormField
-        control={form.control}
-        name="payment_method"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Payment Method</FormLabel>
-
-            <FormControl>
-              <RadioGroupCard
-                {...field}
-                value={field.value ?? ""}
-                onChange={field.onChange}
-                options={paymentOptionsWithBadges}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* 2. Transaction Review with Accordion */}
+      {/* Transaction Review with Accordion */}
       <section className="mt-6">
         <h3 className="text-lg font-semibold mb-4">Transaction Review</h3>
 
@@ -126,8 +55,12 @@ export function StepFour({ form }: Props) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Name:</span>
-                  <span>{formData?.payer?.name || "-"}</span>
+                  <span className="text-muted-foreground">First Name:</span>
+                  <span>{formData?.payer?.first_name || "-"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Name:</span>
+                  <span>{formData?.payer?.last_name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
@@ -165,8 +98,12 @@ export function StepFour({ form }: Props) {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Name:</span>
-                  <span>{formData?.payee?.name || "-"}</span>
+                  <span className="text-muted-foreground">First Name:</span>
+                  <span>{formData?.payee?.first_name || "-"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Last Name:</span>
+                  <span>{formData?.payee?.last_name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Email:</span>
@@ -198,14 +135,14 @@ export function StepFour({ form }: Props) {
             <AccordionContent>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Transaction ID:</span>
+                  <span className="text-muted-foreground">ID:</span>
                   <span className="font-mono">
                     {formData?.transaction?.id || "-"}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Title:</span>
-                  <span>{formData?.transaction?.title || "-"}</span>
+                  <span>{formData?.transaction?.name || "-"}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Category:</span>
@@ -225,7 +162,7 @@ export function StepFour({ form }: Props) {
         </Accordion>
       </section>
 
-      {/* 3. Transaction Calculation */}
+      {/* Transaction Calculation */}
       <section className="mt-6 space-y-4 border rounded-md p-4 bg-muted">
         <h3 className="text-lg font-semibold">Payment Details</h3>
 
@@ -236,14 +173,7 @@ export function StepFour({ form }: Props) {
           </div>
 
           <div className="flex justify-between">
-            <span>
-              Transaction Cost ({paymentMethod === "QRIS" ? "0.7%" : "Fixed"}):
-            </span>
-            <span>Rp{paymentFee.toLocaleString("id-ID")}</span>
-          </div>
-
-          <div className="flex justify-between">
-            <span>Service Fee ({amount < 500000 ? "Fixed" : "2%"}):</span>
+            <span>Service Fee ({amount < 500000 ? "Fixed" : "1.6%"}):</span>
             <span>Rp{serviceFee.toLocaleString("id-ID")}</span>
           </div>
 
@@ -256,7 +186,7 @@ export function StepFour({ form }: Props) {
         </div>
       </section>
 
-      {/* 4. Terms & Privacy Checkboxes */}
+      {/* Terms & Privacy Checkboxes */}
       <FormField
         control={form.control}
         name="additional.isAcceptTermsAndPrivacy"
